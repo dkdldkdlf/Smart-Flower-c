@@ -6,7 +6,7 @@ module.exports = async (req, res) => {
   const lineToken = 'QLEVOPZpqpO8SptudJJ03W/Rz/YP5o3GZnABZ+A2hXgz1SVo5RRII0/aEW9SL55l/qbA15p2MivU1YdGtZ/aEyURqbN+vXiNSDje2b0eqIpGapcSjbjNiiE5s/qXgdRy/1jqXf6yFrMIGLWlKspRrQdB04t89/1O/w1cDnyilFU=';
 
   // ESP32에서 보낼 메시지 내용을 정의합니다.
-  const message = 'ESP32에서 알림이 왔습니다!';
+  const message = '정동건 테스트';
 
   // 푸시 메시지를 받을 LINE 사용자 ID 또는 그룹 ID를 여기에 입력하세요.
   // 이 정보는 LINE Developers 콘솔에서 찾을 수 있습니다.
@@ -14,7 +14,7 @@ module.exports = async (req, res) => {
 
   try {
     await axios.post(
-      'https://api.line.me/v2w',
+      'https://api.line.me/v2/bot/message/push',
       {
         to: lineUserID,
         messages: [{
