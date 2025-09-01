@@ -19,16 +19,8 @@ module.exports = async (req, res) => {
             pendingCommand = '습도';
             replyUserId = event.source.userId;
             responseMessage = 'ESP32에 습도 측정을 요청했습니다. 잠시만 기다려주세요.';
-          } else if (userMessage.includes('상태')) {
-            responseMessage = `현재 ESP32에게 "${pendingCommand}" 명령이 대기 중입니다.`;
-          } else if (userMessage.includes('켜기')) {
-            pendingCommand = '켜기';
-            responseMessage = 'ESP32를 켰습니다.';
-          } else if (userMessage.includes('끄기')) {
-            pendingCommand = '끄기';
-            responseMessage = 'ESP32를 껐습니다.';
           } else {
-            responseMessage = '안녕하세요! "습도", "상태", "켜기", "끄기" 중 하나를 입력해보세요.';
+            responseMessage = '안녕하세요! "습도", "."  중 하나를 입력해보세요.';
           }
 
           await axios.post('https://api.line.me/v2/bot/message/reply', {
