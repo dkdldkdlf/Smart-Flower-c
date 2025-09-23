@@ -18,9 +18,9 @@ module.exports = async (req, res) => {
           if (userMessage.includes('습도')) {
             pendingCommand = '습도';
             replyUserId = event.source.userId;
-            responseMessage = 'ESP32에 습도 측정을 요청했습니다. 잠시만 기다려주세요.';
+            responseMessage = '습도 측정을 요청했습니다! 잠시만 기다려주세요.';
           } else {
-            responseMessage = '안녕하세요! "습도", "."  중 하나를 입력해보세요.';
+            responseMessage = '안녕하세요! 스마트 화분 알리미입니다! \n "습도"를 입력해보세요.';
           }
 
           await axios.post('https://api.line.me/v2/bot/message/reply', {
@@ -79,7 +79,7 @@ module.exports = async (req, res) => {
         try {
           await axios.post('https://api.line.me/v2/bot/message/push', {
             to: adminUserID,
-            messages: [{ type: 'text', text: 'ESP32가 정상적으로 동작 중입니다.' }],
+            messages: [{ type: 'text', text: 'ESP32가 연결되었습니다.' }],
           }, { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${lineToken}` } });
           res.status(200).send('Periodic message sent successfully!');
         } catch (error) {
