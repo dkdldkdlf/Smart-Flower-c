@@ -18,7 +18,7 @@ module.exports = async (req, res) => {
           if (userMessage.includes('습도')) {
             pendingCommand = '습도';
             replyUserId = event.source.userId;
-            responseMessage = '습도 측정을 요청했습니다! 잠시만 기다려주세요.';
+            responseMessage = '습도 측정을 요청했습니다! \n 잠시만 기다려주세요.';
           } else {
             responseMessage = '안녕하세요! 스마트 화분 알리미입니다! \n "습도"를 입력해보세요.';
           }
