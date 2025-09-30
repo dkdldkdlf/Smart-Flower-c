@@ -1,29 +1,35 @@
 const axios = require('axios');
 const lineToken = process.env.LINE_ACCESS_TOKEN;
 
-// '명령'과 '사용자ID'를 하나의 객체로 묶어서 관리합니다.
+// '습도' 요청을 위한 객체
 let pendingRequest = { 
   command: '대기', 
   userId: null 
 };
+
+// 마지막으로 봇과 상호작용한 사용자의 ID를 저장할 변수
+let lastInteractedUserID = null;
+const adminUserID = 'U326ad71508358143c1673f43f39d0ebb'; // 비상용 관리자 ID
 
 module.exports = async (req, res) => {
   // 1. LINE 플랫폼 Webhook 처리
   if (req.headers['x-line-signature']) {
     try {
       const events = req.body.events;
-      // ✅ 수정: 중복된 for문을 하나로 합쳤습니다.
       for (const event of events) {
         if (event && event.type === 'message' && event.message.type === 'text') {
           const userMessage = event.message.text;
           const replyToken = event.replyToken;
+          const currentUserId = event.source.userId;
           let responseMessage = '';
 
+          // 봇에게 말을 건 사람을 '마지막 사용자'로 즉시 기록
+          lastInteractedUserID = currentUserId;
+
           if (userMessage.includes('습도')) {
-            // Vercel 변수에 command와 userId를 함께 저장합니다.
             pendingRequest = { 
               command: '습도', 
-              userId: event.source.userId 
+              userId: currentUserId 
             };
             responseMessage = '🌡️ 습도 측정을 요청했습니다!\n잠시만 기다려주세요 ⏳';
           } else {
@@ -53,19 +59,20 @@ module.exports = async (req, res) => {
         
         if (action === 'reply' && message && userId) {
           await axios.post('https://api.line.me/v2/bot/message/push', {
-            to: userId, // 전달받은 userId를 사용합니다.
+            to: userId, // '습도' 요청을 한 사용자에게 응답
             messages: [{ type: 'text', text: message }],
           }, { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${lineToken}` } });
           return res.status(200).send('Reply sent to LINE user.');
 
         } else if (action === 'notify' && message) {
-          // ✅ 수정: 중복된 변수 선언을 정리했습니다.
-          const adminUserID = 'U326ad71508358143c1673f43f39d0ebb';
+          // ✅ 수정: 고정된 관리자 ID 대신, 마지막 사용자의 ID를 사용합니다.
+          // 만약 마지막 사용자가 없으면(봇 설치 후 아무도 말을 안 걸었으면) 관리자에게 보냅니다.
+          const recipientId = lastInteractedUserID ? lastInteractedUserID : adminUserID;
            await axios.post('https://api.line.me/v2/bot/message/push', {
-            to: adminUserID,
+            to: recipientId,
             messages: [{ type: 'text', text: message }],
           }, { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${lineToken}` } });
-          return res.status(200).send('Notification sent to admin.');
+          return res.status(200).send('Notification sent to last user.');
 
         } else {
           return res.status(400).send('Bad Request: Missing parameters.');
@@ -78,12 +85,10 @@ module.exports = async (req, res) => {
     // ESP32가 명령을 가져갈 때 (GET)
     else if (req.method === 'GET') {
       const action = req.query.action;
-      // ✅ 수정: GET 요청 로직을 명확하게 정리했습니다.
       if (action === 'get_command') {
         res.status(200).json(pendingRequest);
         pendingRequest = { command: '대기', userId: null };
       } else if (action === 'send_message') {
-        const adminUserID = 'U326ad71508358143c1673f43f39d0ebb';
         try {
           await axios.post('https://api.line.me/v2/bot/message/push', {
             to: adminUserID,
